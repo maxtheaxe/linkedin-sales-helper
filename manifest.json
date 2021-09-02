@@ -1,0 +1,33 @@
+{
+
+	"description": "simplifies the process of collecting results of linkedin sales navigator",
+	"manifest_version": 2,
+	"name": "linkedin sales helper",
+	"version": "1.0",
+	"homepage_url": "https://github.com/maxtheaxe/linkedin-sales-helper",
+	"icons": {
+		"48": "icons/beasts-48.png"
+	},
+
+	"permissions": [
+		"activeTab",
+		"downloads"
+		// "*://linkedin.com/sales/*"
+	],
+
+	"browser_action": {
+		"default_icon": "icons/beasts-32.png",
+		"theme_icons": [{
+				"light": "icons/beasts-32-light.png",
+				"dark": "icons/beasts-32.png",
+				"size": 32
+		}],
+		"default_title": "Beastify",
+		"default_popup": "popup/toolbox.html"
+	},
+
+	"web_accessible_resources": [
+		"beasts/*.jpg"
+	]
+
+}
