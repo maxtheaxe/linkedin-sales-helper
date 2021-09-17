@@ -10,17 +10,30 @@
 	window.hasRun = true;
 
 	/**
-	 * collect all leads from page
+	 * collect all leads from lead list page
 	 */
 	function collectLeads() {
-		// identify all lead items listed on page
-		let leads = document.querySelectorAll(
-			'.org-people-profile-card__profile-title'
-			);
+		// identify names of all leads listed on page
+		let leadNames = document.querySelectorAll(
+			"[data-anonymize='person-name']");
+		// identify titles of all leads listed on page
+		let leadTitles = document.querySelectorAll(
+			"[data-anonymize='job-title']");
+		// identify companies of all leads listed on page
+		// number of co names is dynamically sliced to number
+		// of ppl names (since it's double)
+		let leadCompanies = Array.from(document.querySelectorAll(
+			"[data-anonymize='company-name'")).slice(0, leadNames.length);
 		let leadsInfo = []; // extracted info about each lead
-		// extract, collect name of each lead
-		for (let person of leads) { // I assume this is like a py foreach loop
-			leadsInfo.push(person.textContent); // append name of lead to info arr
+		// extract, collect data about each lead (and clean up)
+		for (let i = 0; i < leadNames.length; i++) {
+			// extract name, remove whitespace/qualifications
+			let name = leadNames[i].textContent.trim().split(",")[0]
+			// extract title
+			let title = leadTitles[i].textContent
+			// extract company
+			let company = leadCompanies[i].textContent
+			leadsInfo.push([name, title, company]); // append info per lead to main list
 		}
 		return leadsInfo;
 	}
