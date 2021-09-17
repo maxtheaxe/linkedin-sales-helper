@@ -13,6 +13,22 @@
 	 * collect all leads from lead list page
 	 */
 	function collectLeads() {
+		// verify that all leads have complete accounts, profile info
+		let missingAccounts = document.querySelectorAll(
+			"span.list-detail-account-matching__text");
+		if (missingAccounts.length > 0) {
+			// there's obv a better way to do multiline
+			window.alert(
+				"Some leads were missing info, so they were hidden and " +
+				"excluded from the collection."
+				);
+			// return "error: incomplete info";
+			// remove leads with missing info
+			for (let i = 0; i < missingAccounts.length; i++) {
+				// delete problematic lead (doesn't actually remove from linkedin)
+				missingAccounts[i].parentNode.parentNode.parentNode.parentNode.remove();
+			}
+		}
 		// identify names of all leads listed on page
 		let leadNames = document.querySelectorAll(
 			"[data-anonymize='person-name']");
@@ -22,6 +38,7 @@
 		// identify companies of all leads listed on page
 		// number of co names is dynamically sliced to number
 		// of ppl names (since it's double)
+		// if errors are caused, might need to delete extras assoc w missing accs
 		let leadCompanies = Array.from(document.querySelectorAll(
 			"[data-anonymize='company-name'")).slice(0, leadNames.length);
 		let leadsInfo = []; // extracted info about each lead
@@ -33,8 +50,27 @@
 			let title = leadTitles[i].textContent
 			// extract company
 			let company = leadCompanies[i].textContent
-			leadsInfo.push([name, title, company]); // append info per lead to main list
+			// append info per lead to main list
+			leadsInfo.push([name, title, company]);
 		}
+		// retrieve previously collected data from session storage
+		let retrievedStorage = JSON.parse(
+			window.sessionStorage.getItem('collected_leads'));
+		let unparsedStorage = window.sessionStorage.getItem('collected_leads');
+		// if there was previously collected data, extend it w/o dupes
+		if (retrievedStorage !== null) {
+			for (let i = 0; i < leadsInfo.length; i++) {
+				// if not dupe, extend old list
+				// (checks if name is substring of unparsed JSON)
+				if (!unparsedStorage.includes(leadsInfo[i][0])) {
+					retrievedStorage.push(leadsInfo[i]);
+				}
+			}
+			leadsInfo = retrievedStorage; // save extended list to leadsInfo
+		}
+		// save collected data to session storage as JSON
+		window.sessionStorage.setItem('collected_leads',
+			JSON.stringify(leadsInfo));
 		return leadsInfo;
 	}
 
@@ -112,6 +148,14 @@
 		let csvURL = URL.createObjectURL(csvData);
 		browser.downloads.download({url: csvURL, filename: fileName})
 		URL.revokeObjectURL(csvURL)
+	}
+
+	/**
+	 * reset all collected info leads
+	 */
+	function resetLeads() {
+		// clear data stored in session storage
+		window.sessionStorage.setItem('collected_leads', null);
 	}
 
 	/**

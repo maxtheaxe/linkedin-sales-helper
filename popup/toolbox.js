@@ -64,7 +64,7 @@ function listenForClicks() {
 				.then(search)
 				.catch(reportError);
 		}
-		else if (e.target.classList.contains("reset")) {
+		else if (e.target.id === "reset") {
 			browser.tabs.query({active: true, currentWindow: true})
 				.then(reset)
 				.catch(reportError);

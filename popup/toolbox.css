@@ -1,31 +1,43 @@
 html, body {
-  width: 100px;
+	width: 100px;
 }
 
 .hidden {
-  display: none;
+	display: none;
 }
 
 .button {
-  margin: 3% auto;
-  padding: 4px;
-  text-align: center;
-  font-size: 1.5em;
-  cursor: pointer;
+	margin: 3% auto;
+	padding: 4px;
+	text-align: center;
+	font-size: 1.5em;
+	cursor: pointer;
 }
 
 .beast:hover {
-  background-color: #CFF2F2;
+	background-color: #CFF2F2;
 }
 
-.beast {
-  background-color: #E5F2F2;
+/*.beast {
+	background-color: #E5F2F2;
+}*/
+
+#collect {
+	background-color: #B7E9F7;
 }
 
-.reset {
-  background-color: #FBFBC9;
+#search {
+	background-color: #BCF5BC;
+}
+
+#export {
+	background-color: #FDFD96;
+}
+
+#reset {
+	background-color: #FF9A98;
 }
 
 .reset:hover {
-  background-color: #EAEA9D;
+	background-color: #EAEA9D;
 }
