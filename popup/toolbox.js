@@ -1,3 +1,5 @@
+// toolbox.js for linkedin-sales-helper by maxtheaxe
+
 /**
  * CSS to hide everything on the page,
  * except for elements that have the "beastify-image" class.
@@ -57,36 +59,39 @@ function listenForClicks() {
 		if (e.target.id === "collect") {
 			browser.tabs.query({active: true, currentWindow: true})
 				.then(collect)
-				.catch(reportError);
+				// .catch(reportError);
 		}
 		else if (e.target.id === "search") {
 			browser.tabs.query({active: true, currentWindow: true})
 				.then(search)
-				.catch(reportError);
+				// .catch(reportError);
 		}
 		else if (e.target.id === "reset") {
 			browser.tabs.query({active: true, currentWindow: true})
 				.then(reset)
-				.catch(reportError);
+				// .catch(reportError);
+		}
+		else if (e.target.id === "settings") {
+			var openingPage = browser.runtime.openOptionsPage()
 		}
 	});
 }
 
-/**
- * There was an error executing the script.
- * Display the popup's error message, and hide the normal UI.
- */
-function reportExecuteScriptError(error) {
-	document.querySelector("#popup-content").classList.add("hidden");
-	document.querySelector("#error-content").classList.remove("hidden");
-	console.error(`Failed to execute sales helper content script: ${error.message}`);
-}
+// /**
+//  * There was an error executing the script.
+//  * Display the popup's error message, and hide the normal UI.
+//  */
+// function reportExecuteScriptError(error) {
+// 	document.querySelector("#popup-content").classList.add("hidden");
+// 	document.querySelector("#error-content").classList.remove("hidden");
+// 	console.error(`Failed to execute sales helper content script: ${error.message}`);
+// }
 
 /**
  * When the popup loads, inject a content script into the active tab,
  * and add a click handler.
  * If we couldn't inject the script, handle the error.
  */
-browser.tabs.executeScript({file: "/content_scripts/linkedin.js"})
+browser.tabs.executeScript({file: "/content_scripts/helper.js"})
 .then(listenForClicks)
-.catch(reportExecuteScriptError);
+// .catch(reportExecuteScriptError);

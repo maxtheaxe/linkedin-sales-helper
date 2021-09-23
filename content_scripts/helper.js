@@ -106,31 +106,6 @@
 	}
 
 	/**
-	 * searches for contact info for collected leads
-	 */
-	function searchTest(leads) { // sb_form_q search_icon b_results
-		// base case
-		if (leads.length === 0) {
-			return [];
-		}
-		let leadsExtra = [];
-		// search for name
-		document.getElementById('sb_form_q').value = leads[0];
-		document.getElementById('sb_form_go').click();
-		// record content preview of first result
-		let preview = document.getElementById(
-			'b_results'
-			).children[0].children[1].children[1].textContent;
-		window.onload = (event) => {
-			console.log(preview);
-			leadsExtra.push([leads[0], preview]); // append name and preview
-		}
-		return leadsExtra.concat(
-			searchTest(leads.slice(1))
-		);
-	}
-
-	/**
 	 * calls zoom info to retrieve contact info
 	 */
 	async function retrieveZoomInfo(firstName, lastName, title, company) {
@@ -145,9 +120,9 @@
 		console.log("adding button");
 		// check if button already exists
 		if (document.getElementById("helper-menu")) {
-			console.log("button already here");
-			return; // exit
-		} // otherwise, add it
+			console.log("deleting old button");
+			document.getElementById("helper-menu").remove(); // delete it
+		} // re(?) add it
 		// identify parent menu
 		let menu = document.querySelector('.content-title-row-right');
 		// create button
@@ -171,76 +146,156 @@
 	}
 
 	/**
-	 * automates zoominfo search process
+	 * semi-automates zoominfo search process
 	 */
 	function autoZoom() {
 		console.log("zooming!"); // remove
 		// retrieve previously collected data from local storage
-		let retrievedStorage = JSON.parse(
-			window.localStorage.getItem('collected_leads'));
-		let unparsedStorage = window.localStorage.getItem('collected_leads');
-		// if there was no previously collected data, notify user and exit
-		if (retrievedStorage === null) {
-			window.alert("no collected leads found—please get them from linkedin first");
-			return;
-		}
-		// identify next contact
-		// loop until finding a lead with no contact info
-		for (let i = 0; i < retrievedStorage.length; i++) {
-			// if list length is less than 5, need contact info
-			if (retrievedStorage[i].length <= 5) {
-				var currentLead = retrievedStorage[i];
-				break; // exit loop
+		browser.storage.local.get("leadsInfo", function(result) {
+			let retrievedStorage = result.leadsInfo;
+			console.log(retrievedStorage); // see currently saved stuff
+			// let unparsedStorage = window.localStorage.getItem('collected_leads');
+			// if there was no previously collected data, notify user and exit
+			if ((isEmpty(retrievedStorage)) || 
+				(retrievedStorage === "undefined") || (retrievedStorage === null)) {
+				window.alert("no collected leads found—please get them from linkedin first");
+				return;
 			}
-		}
-		// check if we've started a search
-		// can also check if at any point a contact is opened, skip to collection process
-		// should also check if there are zero (or just one) left at any point
-		if (window.location.href.includes('query')) { // if query in url
-			if (document.querySelector(".email-link")) {
-				// collect em and store em
+			// identify next contact
+			// loop until finding a lead with no contact info
+			var leadIndex = null; // in case none are found
+			for (let i = 0; i < retrievedStorage.length; i++) {
+				// if list length is less than 5, need contact info
+				if (retrievedStorage[i].length < 5) {
+					leadIndex = i; // identify current lead
+					console.log(`current lead: ${retrievedStorage[leadIndex]}`)
+					break; // exit loop
+				}
 			}
-			// technically, we can assume that if we've started a search,
-			// then we've entered a contact name, but let's be sure
-			else if (document.querySelector("[automationid='Contact Name']")) {
-				// check if we've also entered a company name
-				if (document.querySelector("[automationid='Company Name']")) {
-					// if we have, select the first (hopefully only) contact
-					document.querySelector("[automation-id='visitorRow']").click();
+			// check if we've finished collecting contacts
+			if (leadIndex === null) {
+				window.alert("search complete");
+				return;
+			}
+			// check if we've started a search
+			// can also check if at any point a contact is opened, skip to collection process
+			// should also check if there are zero (or just one) left at any point
+			if (window.location.href.includes("query")) { // if query in url
+				// if contact details are visible, save 'em
+				if (document.querySelector(
+					".contact-details-grid-col-left > div:nth-child(1)")) {
+					// if phone exists
+					if (document.querySelector(
+						"zi-text.data-column:nth-child(2) > div:nth-child(1) > a:nth-child(1)"
+						)) { // save it
+						var phone = document.querySelector(
+						"zi-text.data-column:nth-child(2) > div:nth-child(1) > a:nth-child(1)"
+						).href.slice(4);
+					} // otherwise, save "not found"
+					else {
+						var phone = "not found";
+					}
+					// if email exists
+					if (document.querySelector(".email-link")) { // save it
+						var email = document.querySelector(".email-link").title;
+					} // otherwise, save "not found"
+					else {
+						var email = "not found";
+					}
+					// add 'em to current info list
+					retrievedStorage[leadIndex].push(phone);
+					retrievedStorage[leadIndex].push(email);
+					// reset in prep for next search
+					document.querySelector("a.xxsmall-12").click();
+					// save new data to local storage
+					leadsInfo = retrievedStorage;
+					browser.storage.local.set({"leadsInfo": leadsInfo});
+					// console.log(leadsInfo);
+				}
+				// technically, we can assume that if we've started a search,
+				// then we've entered a contact name, but let's be sure
+				else if (document.querySelector("[automationid='Contact Name']")) {
+					// check if we've also entered a company name
+					if (document.querySelector("[automationid='Company Name']")) {
+						// if no-one was found, save "not found" to contact, move on
+						if ((document.querySelector(".no-results")) ||
+							(document.querySelector(".brief-no-results"))) {
+							// add em to current info list
+							retrievedStorage[leadIndex].push("not found");
+							retrievedStorage[leadIndex].push("not found");
+							// reset in prep for next search
+							document.querySelector("a.xxsmall-12").click();
+							// save new data to local storage
+							leadsInfo = retrievedStorage;
+							browser.storage.local.set({"leadsInfo": leadsInfo});
+						}
+						// if we have, select the first (hopefully only) contact
+						document.querySelector("[automation-id='visitorRow']").click();
+					}
+					else {
+						// add current co name filter to search
+						enterLeadCompany(retrievedStorage[leadIndex][2]);
+					}
 				}
 				else {
-					enterLeadCompany(currentLead[2]); // add current co name filter to search
+					// shouldn't get here--there should be no query without contact name
+					document.querySelector("a.xxsmall-12").click(); // click clear button
+					window.alert("something went wrong—please try again");
+					return;
 				}
 			}
 			else {
-				// shouldn't get here--there should be no query without contact name
-				document.querySelector("a.xxsmall-12").click(); // click clear button
-				window.alert("something went wrong—please try again");
-				return;
+				enterLeadName(retrievedStorage[leadIndex][0]); // add current name filter to search
 			}
-		}
-		else {
-			enterLeadName(currentLead[0]); // add current name filter to search
-		}
-		// // save collected data to local storage as JSON (should only do so if modified)
-		// window.localStorage.setItem('collected_leads',
-		// 	JSON.stringify(leadsInfo));
+		});
 	}
 
 	/**
-	 * enter next lead name
+	 * enter next lead name in zoominfo adv search page
 	 */
 	function enterLeadName(leadName) {
-		// enter deets
-		return;
+		// open person drop down
+		document.querySelector(
+			"[automationid='Contacts-icon-closed'").click();
+		// open person name search
+		document.getElementById(
+			"contact-name-filter-header").children[0].click();
+		// type in person name
+		document.getElementById(
+			"full-name-freetext-filter").value = leadName;
+		// show search button
+		document.getElementById(
+			"full-name-freetext-filter").parentNode.children[1].classList.add('show-icon');
+		// click search button
+		document.getElementById(
+			"full-name-freetext-filter").parentNode.children[1].click();
+		// close contact dropdown
+		document.querySelector(
+			"[automationid='Contacts-icon-opened'").click();
 	}
 
 	/**
 	 * enter next lead's company name
 	 */
 	function enterLeadCompany(leadCompany) {
-		// enter deets
-		return;
+		// open company drop down
+		document.querySelector(
+			"[automationid='Companies-icon-closed'").click();
+		// open company name search
+		document.getElementById(
+			"company-name-filter-header").children[0].click();
+		// type in company name
+		document.getElementById(
+			"company-name-freetext-filter").value = leadCompany;
+		// show search button
+		document.getElementById(
+			"company-name-freetext-filter").parentNode.children[1].classList.add('show-icon');
+		// click search button
+		document.getElementById(
+			"company-name-freetext-filter").parentNode.children[1].click();
+		// close company dropdown
+		document.querySelector(
+			"[automationid='Companies-icon-opened'").click();
 	}
 
 	/**
@@ -278,7 +333,9 @@
 	 */
 	function resetLeads() {
 		// clear data stored in local storage
-		window.localStorage.setItem('collected_leads', null);
+		browser.storage.local.remove("leadsInfo", function() {
+			console.log("reset stored leads");
+		});
 	}
 
 	/**
@@ -320,8 +377,7 @@
 			// console.log(results);
 		}
 		else if (message.command === "reset") {
-			// removeExistingBeasts();
-			console.log("reset")
+			resetLeads();
 		}
 	});
 

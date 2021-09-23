@@ -6,23 +6,38 @@
 	"version": "1.0",
 	"homepage_url": "https://github.com/maxtheaxe/linkedin-sales-helper",
 	"icons": {
-		"48": "icons/beasts-48.png"
+		"48": "icons/linkedin-sales-helper.png"
 	},
 
 	"permissions": [
 		"activeTab",
-		"downloads"
+		"downloads",
+		"storage"
 		// "*://linkedin.com/sales/*"
 	],
 
+	"options_ui": {
+		"browser_style": true,
+		"open_in_tab": true,
+		"page": "settings/options.html"
+	},
+
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "sales.helper@tnkr.xyz"
+		}
+	},
+
+	// update_url
+
 	"browser_action": {
-		"default_icon": "icons/beasts-32.png",
-		"theme_icons": [{
-				"light": "icons/beasts-32-light.png",
-				"dark": "icons/beasts-32.png",
-				"size": 32
-		}],
-		"default_title": "Beastify",
+		"default_icon": "icons/linkedin-sales-helper.png",
+		// "theme_icons": [{
+		// 		"light": "icons/beasts-32-light.png",
+		// 		"dark": "icons/beasts-32.png",
+		// 		"size": 32
+		// }],
+		"default_title": "linkedin sales helper",
 		"default_popup": "popup/toolbox.html"
 	},
 

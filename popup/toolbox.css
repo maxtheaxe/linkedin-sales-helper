@@ -14,13 +14,9 @@ html, body {
 	cursor: pointer;
 }
 
-.beast:hover {
-	background-color: #CFF2F2;
+#settings {
+	background-color: #D3D3D3;
 }
-
-/*.beast {
-	background-color: #E5F2F2;
-}*/
 
 #collect {
 	background-color: #B7E9F7;
@@ -36,8 +32,4 @@ html, body {
 
 #reset {
 	background-color: #FF9A98;
-}
-
-.reset:hover {
-	background-color: #EAEA9D;
 }
