@@ -87,6 +87,7 @@
 				}
 				leadsInfo = retrievedStorage; // save extended list to leadsInfo
 			}
+			addLeadCounter(leadsInfo.length);
 			// save collected data to local storage
 			browser.storage.local.set({"leadsInfo": leadsInfo});
 			console.log(leadsInfo);
@@ -94,16 +95,30 @@
 	}
 
 	/**
-	 * retrieves contact info for collected leads
+	 * add counter element to linkedin page to reflect number leads collected
 	 */
-	function retrieveContactInfo(leadsInfo) {
-		let leadsPlusEmails = [];
-		// loop over all leads
-		for (let person of leadsInfo) {
-
-			leadsPlusEmails.push(person.textContent); // append name of lead to info arr
+	function addLeadCounter(numLeads) {
+		// if count element already exists on page, remove it
+		if (document.getElementById("helper-counter")) {
+			document.getElementById("helper-counter").remove();
 		}
-		return leadsInfo;
+		// create element, add to page
+		let leadCounter = document.createElement("p");
+		leadCounter.id = "helper-counter";
+		// borrow linkedin styling
+		leadCounter.classList = `
+			linkedin-sales-helper
+			artdeco-button
+			ml2 mr2 mt2
+			artdeco-button--2
+			artdeco-button--primary
+			ember-view
+			lists-nav-inline-action-buttons__share`;
+		leadCounter.textContent = `${numLeads} Collected`;
+		leadCounter.style.cssText = "background-color: red;";
+		// identify parent menu, append element
+		let targetMenu = document.querySelector(".mlA");
+		targetMenu.appendChild(leadCounter);
 	}
 
 	/**
