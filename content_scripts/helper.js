@@ -73,8 +73,9 @@
 			// stringify for lazy dupe searching
 			let unparsedStorage = JSON.stringify(retrievedStorage);
 			// if there was previously collected data, extend it w/o dupes
+			// verify these boolean statements, they seem sketchy
 			if ((!isEmpty(retrievedStorage)) || 
-				(retrievedStorage === "undefined") || (retrievedStorage === null)) {
+				(retrievedStorage !== "undefined") || (retrievedStorage !== null)) {
 				for (let i = 0; i < leadsInfo.length; i++) {
 					// if not dupe, extend old list
 					// (checks if name is substring of unparsed JSON)
@@ -117,17 +118,19 @@
 	 * opens step menu on zoominfo page
 	 */
 	function addSearchMenu() {
-		console.log("adding button");
-		// check if button already exists
-		if (document.getElementById("helper-menu")) {
-			console.log("deleting old button");
-			document.getElementById("helper-menu").remove(); // delete it
+		console.log("adding menu");
+		// check if button/porthole already exist
+		if (document.getElementsByClassName("linkedin-sales-helper").length !== 0) {
+			console.log("deleting old elements");
+			document.getElementById("helper-menu").remove();
+			document.getElementById("helper-porthole").remove();
 		} // re(?) add it
 		// identify parent menu
 		let menu = document.querySelector('.content-title-row-right');
 		// create button
 		let advance = document.createElement("button");
 		advance.id = "helper-menu";
+		advance.classList = "linkedin-sales-helper";
 		advance.textContent = "Next Step";
 		advance.style.cssText = `
 			background-color: red;
@@ -135,14 +138,30 @@
 			border-radius: 10pt;
 			color: white;
 		`;
-		// add new button to menu
+		// create update "porthole"
+		let porthole = document.createElement("p");
+		porthole.id = "helper-porthole";
+		porthole.classList = "linkedin-sales-helper";
+		porthole.textContent = "Current Contact";
+		porthole.style.cssText = `
+			background-color: red;
+			padding: 5pt;
+			padding-right: 25pt;
+			padding-left: 25pt;
+			margin-right: 50pt;
+			border-radius: 10pt;
+			border: 2pt solid black;
+			color: white;
+		`;
+		// add new items to menu
 		menu.appendChild(advance);
+		menu.prepend(porthole);
 		// add event listener, so we know when new button is clicked
 		let addedButton = document.getElementById("helper-menu");
 		addedButton.addEventListener('click', function() {
 			autoZoom(); // call search automation function
 		});
-		console.log("button added");
+		console.log("menu added");
 	}
 
 	/**
@@ -168,7 +187,9 @@
 				// if list length is less than 5, need contact info
 				if (retrievedStorage[i].length < 5) {
 					leadIndex = i; // identify current lead
-					console.log(`current lead: ${retrievedStorage[leadIndex]}`)
+					// console.log(`current lead: ${retrievedStorage[leadIndex]}`)
+					document.getElementById("helper-porthole").textContent = 
+						retrievedStorage[leadIndex][0];
 					break; // exit loop
 				}
 			}
@@ -349,9 +370,6 @@
 		else if (message.command === "reset") {
 			resetLeads();
 		}
-		// else if (message.command === "export") {
-		// 	exportLeads();
-		// }
 	});
 
 })();

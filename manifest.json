@@ -10,11 +10,19 @@
 	},
 
 	"permissions": [
-		"activeTab",
+		// "activeTab",
 		"downloads",
-		"storage"
-		// "*://linkedin.com/sales/*"
+		"storage",
+		"*://*.linkedin.com/sales/*",
+		"*://*.zoominfo.com/*"
 	],
+
+	// "content_scripts": [ // ref: https://stackoverflow.com/a/7655808/4513452
+	// 	{
+	// 		"matches": ["*://*.linkedin.com/sales/*", "*://*.zoominfo.com/*"],
+	// 		"js": ["content_scripts/helper.js"]
+	// 	}
+	// ],
 
 	"options_ui": {
 		"browser_style": true,

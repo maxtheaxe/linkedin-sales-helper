@@ -1,19 +1,13 @@
 // toolbox.js for linkedin-sales-helper by maxtheaxe
 
 /**
- * CSS to hide everything on the page,
- * except for elements that have the "beastify-image" class.
- */
-const hidePage = `body > :not(.beastify-image) {
-	display: none;
-}`;
-
-/**
  * Listen for clicks on the buttons, and send the appropriate message to
  * the content script in the page.
  */
 function listenForClicks() {
 	document.addEventListener("click", (e) => {
+
+		// window.alert("hey");
 
 		/**
 		 * send a "collect" message to the content script in the active tab.
@@ -38,10 +32,8 @@ function listenForClicks() {
 		 * send a "reset" message to the content script in the active tab.
 		 */
 		function reset(tabs) {
-			browser.tabs.removeCSS({code: hidePage}).then(() => {
-				browser.tabs.sendMessage(tabs[0].id, {
-					command: "reset",
-				});
+			browser.tabs.sendMessage(tabs[0].id, {
+				command: "reset",
 			});
 		}
 
@@ -113,3 +105,5 @@ function listenForClicks() {
 browser.tabs.executeScript({file: "/content_scripts/helper.js"})
 .then(listenForClicks)
 // .catch(reportExecuteScriptError);
+
+// listenForClicks();
