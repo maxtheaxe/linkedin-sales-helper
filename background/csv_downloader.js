@@ -1,0 +1,52 @@
+// csv_downloader.js for linkedin-sales-helper by maxtheaxe
+
+browser.runtime.onMessage.addListener(handleMessage);
+
+
+/**
+ * handle messages "heard" by event listener
+ */
+function handleMessage(request, sender, sendResponse) {
+	exportLeads();
+}
+
+
+/**
+ * export contact details collected for leads
+ */
+function exportLeads() {
+	console.log("exporting!");
+	browser.storage.local.get("leadsInfo", function(result) {
+		let leadsInfo = result.leadsInfo;
+		// setup csv data
+		let now = new Date();
+		// this is ridiculous--there must be a better way
+		// to create valid filenames from dates
+		let fileName = `sales-helper_${now.toISOString().slice(0,10)}_`;
+		fileName += `${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.csv`;
+		// console.log(fileName);
+		let header = ["Full Name", "Position",
+			"Company Name", "Phone", "Email"].join(", ") + "\n";
+		let csv = header;
+		// build csv with headers
+		for (let i = 0; i < leadsInfo.length; i++) {
+			// add each contact as a "row" to existing string
+			csv += leadsInfo[i].join(", ") + "\n";
+		}
+		// build and download csv file
+		let csvData = new Blob([csv], { type: "text/csv" });  
+		let csvURL = window.URL.createObjectURL(csvData);
+		console.log(csvURL);
+		browser.downloads.download({
+			url: csvURL,
+			filename: fileName,
+			saveAs: true
+		},
+		// revoking URL was causing problems
+		// setTimeout(function() {
+		// 	console.log("download finished");
+		// 	window.URL.revokeObjectURL(url);
+		// }, 5000)
+		);
+	});
+}

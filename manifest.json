@@ -41,8 +41,8 @@
 		"default_popup": "popup/toolbox.html"
 	},
 
-	"web_accessible_resources": [
-		"beasts/*.jpg"
-	]
+	"background": {
+		"scripts": ["background/csv_downloader.js"]
+	}
 
 }

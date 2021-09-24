@@ -46,6 +46,19 @@ function listenForClicks() {
 		}
 
 		/**
+		 * send a "export" message to the content script in the active tab.
+		 * ref: https://stackoverflow.com/a/41420772/4513452
+		 */
+		function exportInfo(tabs) {
+			// in background script, so DL api can be accessed
+			browser.runtime.sendMessage("export");
+			// if it were in content script
+			// browser.tabs.sendMessage(tabs[0].id, {
+			// 	command: "export"
+			// });
+		}
+
+		/**
 		 * Just log the error to the console.
 		 */
 		function reportError(error) {
@@ -59,17 +72,22 @@ function listenForClicks() {
 		if (e.target.id === "collect") {
 			browser.tabs.query({active: true, currentWindow: true})
 				.then(collect)
-				// .catch(reportError);
+				.catch(reportError);
 		}
 		else if (e.target.id === "search") {
 			browser.tabs.query({active: true, currentWindow: true})
 				.then(search)
-				// .catch(reportError);
+				.catch(reportError);
 		}
 		else if (e.target.id === "reset") {
 			browser.tabs.query({active: true, currentWindow: true})
 				.then(reset)
-				// .catch(reportError);
+				.catch(reportError);
+		}
+		else if (e.target.id === "export") {
+			browser.tabs.query({active: true, currentWindow: true})
+				.then(exportInfo)
+				.catch(reportError);
 		}
 		else if (e.target.id === "settings") {
 			var openingPage = browser.runtime.openOptionsPage()

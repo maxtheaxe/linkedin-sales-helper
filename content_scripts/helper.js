@@ -106,7 +106,7 @@
 	}
 
 	/**
-	 * calls zoom info to retrieve contact info
+	 * calls zoom info api to retrieve contact info
 	 */
 	async function retrieveZoomInfo(firstName, lastName, title, company) {
 		zoomAPI = "" // zoom info api endpoint
@@ -299,36 +299,6 @@
 	}
 
 	/**
-	 * export contact details collected for leads
-	 * https://seegatesite.com/tutorial-read-and-write-csv-file-with-javascript/
-	 */
-	function exportContacts(contactInfo) {
-		// setup csv data
-		let now = new Date();
-		// this is ridiculous--there must be a better way
-		// to create valid filenames from dates
-		let fileName = `sales-helper_${now.toISOString().slice(0,10)}
-			_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.csv`;
-		let header = ["First Name", "Last Name",
-			"Email", "Company Name"].join(", ") + '\n';
-		let csv = header;
-		contactInfo.forEach( obj => {
-			let row = [];
-			for (key in obj) {
-				if (obj.hasOwnProperty(key)) {
-					row.push(obj[key]);
-				}
-			}
-			csv += row.join(delimiter)+"\n";
-		});
-		// build and download csv file
-		let csvData = new Blob([csv], { type: 'text/csv' });  
-		let csvURL = URL.createObjectURL(csvData);
-		browser.downloads.download({url: csvURL, filename: fileName})
-		URL.revokeObjectURL(csvURL)
-	}
-
-	/**
 	 * reset all collected info leads
 	 */
 	function resetLeads() {
@@ -379,6 +349,9 @@
 		else if (message.command === "reset") {
 			resetLeads();
 		}
+		// else if (message.command === "export") {
+		// 	exportLeads();
+		// }
 	});
 
 })();
