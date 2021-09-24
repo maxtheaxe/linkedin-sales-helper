@@ -74,8 +74,7 @@
 			let unparsedStorage = JSON.stringify(retrievedStorage);
 			// if there was previously collected data, extend it w/o dupes
 			// verify these boolean statements, they seem sketchy
-			if ((!isEmpty(retrievedStorage)) || 
-				(retrievedStorage !== "undefined") || (retrievedStorage !== null)) {
+			if (!isEmpty(retrievedStorage)) {
 				for (let i = 0; i < leadsInfo.length; i++) {
 					// if not dupe, extend old list
 					// (checks if name is substring of unparsed JSON)
@@ -190,8 +189,7 @@
 			console.log(retrievedStorage); // see currently saved stuff
 			// let unparsedStorage = window.localStorage.getItem('collected_leads');
 			// if there was no previously collected data, notify user and exit
-			if ((isEmpty(retrievedStorage)) || 
-				(retrievedStorage === "undefined") || (retrievedStorage === null)) {
+			if (isEmpty(retrievedStorage)) {
 				window.alert("no collected leads found—please get them from linkedin first");
 				return;
 			}
@@ -341,6 +339,10 @@
 		// clear data stored in local storage
 		browser.storage.local.remove("leadsInfo", function() {
 			console.log("reset stored leads");
+			// if count element exists on page, update it
+			if (document.getElementById("helper-counter")) {
+				document.getElementById("helper-counter").textContent = "0 Collected";
+			}
 		});
 	}
 
