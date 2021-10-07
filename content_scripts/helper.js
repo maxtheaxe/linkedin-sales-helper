@@ -60,10 +60,10 @@
 		for (let i = 0; i < leadNames.length; i++) {
 			// extract name, remove whitespace/qualifications
 			let name = leadNames[i].textContent.trim().split(",")[0]
-			// extract title
-			let title = leadTitles[i].textContent
-			// extract company
-			let company = leadCompanies[i].textContent
+			// extract title (with commas stripped for csv later)
+			let title = leadTitles[i].textContent.replaceAll(",", "");
+			// extract company (with commas stripped for csv later)
+			let company = leadCompanies[i].textContent.replaceAll(",", "");
 			// append info per lead to main list
 			leadsInfo.push([name, title, company]);
 		}
@@ -133,6 +133,10 @@
 	 */
 	function addSearchMenu() {
 		console.log("adding menu");
+		// check if clear button exists
+		if (document.querySelector("a.xxsmall-12")) {
+			document.querySelector("a.xxsmall-12").click(); // click if so
+		}
 		// check if button/porthole already exist
 		if (document.getElementsByClassName("linkedin-sales-helper").length !== 0) {
 			console.log("deleting old elements");
