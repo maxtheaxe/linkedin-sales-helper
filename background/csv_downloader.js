@@ -25,15 +25,13 @@ function exportLeads() {
 		let fileName = `sales-helper_${now.toISOString().slice(0,10)}_`;
 		fileName += `${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.csv`;
 		// console.log(fileName);
-		let header = ['"Full Name"', '"Position"',
-			'"Company Name"', '"Phone"', '"Email"'].join(", ") + "\n";
+		let header = ["Full Name", "Position",
+			"Company Name", "Phone", "Email"].join(", ") + "\n";
 		let csv = header;
 		// build csv with headers
 		for (let i = 0; i < leadsInfo.length; i++) {
-			// add double quotes to help handle internal commas
-			csv += '"'; // leading
 			// add each contact as a "row" to existing string
-			csv += leadsInfo[i].join('", "') + '"\n';
+			csv += leadsInfo[i].join(", ") + "\n";
 		}
 		// build and download csv file
 		let csvData = new Blob([csv], { type: "text/csv" });  
