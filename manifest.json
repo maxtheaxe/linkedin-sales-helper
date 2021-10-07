@@ -6,7 +6,7 @@
 	"version": "1.0",
 	"homepage_url": "http://linkedinsaleshelper.com/",
 	"icons": {
-		"48": "icons/linkedin-sales-helper.png"
+		"48": "icons/lsh-48.png"
 	},
 
 	"permissions": [
@@ -32,7 +32,7 @@
 
 	"browser_specific_settings": {
 		"gecko": {
-			"id": "sales.helper@tnkr.xyz"
+			"id": "firefox@linkedinsaleshelper.com"
 		}
 	},
 
