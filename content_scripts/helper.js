@@ -229,6 +229,11 @@
 						var phone = document.querySelector(
 						"zi-text.data-column:nth-child(2) > div:nth-child(1) > a:nth-child(1)"
 						).href.slice(4);
+						// alert user to slow down if clicking too fast to load
+						if (phone === "Phone") {
+							document.querySelector("a.xxsmall-12").click(); // click clear button
+							alert("slow down!");
+						}
 					} // otherwise, save "not found"
 					else {
 						var phone = "not found";
@@ -236,6 +241,11 @@
 					// if email exists
 					if (document.querySelector(".email-link")) { // save it
 						var email = document.querySelector(".email-link").title;
+						// alert user to slow down if clicking too fast to load
+						if (email === "Email") {
+							document.querySelector("a.xxsmall-12").click(); // click clear button
+							alert("slow down!");
+						}
 					} // otherwise, save "not found"
 					else {
 						var email = "not found";
