@@ -14,7 +14,7 @@ function handleMessage(request, sender, sendResponse) {
 /**
  * export contact details collected for leads
  */
-function exportLeads() {
+function exportLeads(nameSplit = true) {
 	console.log("exporting!");
 	browser.storage.local.get("leadsInfo", function(result) {
 		let leadsInfo = result.leadsInfo;
@@ -24,12 +24,23 @@ function exportLeads() {
 		// to create valid filenames from dates
 		let fileName = `sales-helper_${now.toISOString().slice(0,10)}_`;
 		fileName += `${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.csv`;
-		// console.log(fileName);
-		let header = ["Full Name", "Position",
-			"Company Name", "Phone", "Email"].join(", ") + "\n";
+		// allow splitting first word into "first name" based on arg (setting later)
+		if (nameSplit) {
+			var header = ["First Name", "Last Name", "Position",
+				"Company Name", "Phone", "Email"].join(", ") + "\n";
+		}
+		else {
+			var header = ["Full Name", "Position",
+				"Company Name", "Phone", "Email"].join(", ") + "\n";
+		}
 		let csv = header;
 		// build csv with headers
 		for (let i = 0; i < leadsInfo.length; i++) {
+			if (nameSplit) { // split on first space
+				let names = leadsInfo[i][0].split(" ", 2);
+				// replace full name with split names
+				leadsInfo[i].splice(0, 1, names[0], names[1]);
+			}
 			// add each contact as a "row" to existing string
 			csv += leadsInfo[i].join(", ") + "\n";
 		}
