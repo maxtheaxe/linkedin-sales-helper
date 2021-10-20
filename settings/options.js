@@ -1,25 +1,23 @@
 function saveOptions(e) {
 	e.preventDefault();
 	browser.storage.sync.set({
-		zoomUsername: document.querySelector("#zoominfo-username").value,
-		zoomPassword: document.querySelector("#zoominfo-password").value
+		zoomManual: document.getElementById("zoominfo-manual").checked,
 	});
+	console.log("saved");
 }
 
 function restoreOptions() {
 
 	function setCurrentChoice(result) {
-		document.querySelector(
-			"#zoominfo-username").value = result.zoomUsername || null;
-		document.querySelector(
-			"#zoominfo-password").value = result.zoomPassword || null;
+		document.getElementById(
+			"zoominfo-manual").checked = result.zoomManual;
 	}
 
 	function onError(error) {
 		console.log(`Error: ${error}`);
 	}
 
-	let getting = browser.storage.sync.get("color");
+	let getting = browser.storage.sync.get("zoomManual");
 	getting.then(setCurrentChoice, onError);
 }
 

@@ -4,12 +4,12 @@ html {
 body {
 }
 .content {
-	position: absolute;
+	/*position: absolute;
 	left: 50%;
 	top: 25%;
 	-webkit-transform: translate(-50%, -50%);
 	transform: translate(-50%, -50%);
-}
+*/}
 .title {
 	font-family: 'Lato', sans-serif;
 	text-align: center;
@@ -20,7 +20,7 @@ h1 {
 	color: black;
 	font-size: 350%;
 	margin-top: 0px;
-	margin-bottom: 0px;
+	margin-bottom: 10px;
 }
 p.desc {
 	/*color: #2d4ea4;*/
@@ -63,4 +63,9 @@ label.login {
 }
 input.login {
 	display: table-cell;
+}
+
+#submit {
+	font-size: 100%;
+	margin-top: 10px;
 }

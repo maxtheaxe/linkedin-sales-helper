@@ -177,7 +177,15 @@
 		// add event listener, so we know when new button is clicked
 		let addedButton = document.getElementById("helper-menu");
 		addedButton.addEventListener('click', function() {
-			autoZoom(); // call search automation function
+			browser.storage.sync.get("zoomManual", function(result) {
+				// call relevant search automation function
+				if (result.zoomManual) {
+					autoZoom();
+				}
+				else {
+					fullAutoZoom();
+				}
+			});
 		});
 		console.log("menu added");
 	}
@@ -296,6 +304,174 @@
 				enterLeadName(retrievedStorage[leadIndex][0]); // add current name filter to search
 			}
 		});
+	}
+
+	/**
+	 * fully automates zoominfo search process
+	 */
+	function fullAutoZoom() {
+		console.log("full auto zooming!"); // remove
+		// retrieve previously collected data from local storage
+		browser.storage.local.get("leadsInfo", function(result) {
+			let retrievedStorage = result.leadsInfo;
+			console.log(retrievedStorage); // see currently saved stuff
+			// let unparsedStorage = window.localStorage.getItem('collected_leads');
+			// if there was no previously collected data, notify user and exit
+			if (isEmpty(retrievedStorage)) {
+				window.alert("no collected leads found—please get them from linkedin first");
+				return;
+			}
+			// identify next contact
+			// loop until finding a lead with no contact info
+			var leadIndex = null; // in case none are found
+			for (let i = 0; i < retrievedStorage.length; i++) {
+				// if list length is less than 5, need contact info
+				if (retrievedStorage[i].length < 5) {
+					leadIndex = i; // identify current lead
+					// console.log(`current lead: ${retrievedStorage[leadIndex]}`)
+					document.getElementById("helper-porthole").textContent = 
+						retrievedStorage[leadIndex][0];
+					break; // exit loop
+				}
+			}
+			// check if we've finished collecting contacts
+			if (leadIndex === null) {
+				window.alert("search complete");
+				return;
+			}
+			// check if we've started a search
+			// can also check if at any point a contact is opened, skip to collection process
+			// should also check if there are zero (or just one) left at any point
+			if (window.location.href.includes("query")) { // if query in url
+				// if contact details are visible, save 'em
+				if (document.querySelector(
+					".contact-details-grid-col-left > div:nth-child(1)")) {
+					// if phone exists
+					if (document.querySelector(
+						"zi-text.data-column:nth-child(2) > div:nth-child(1) > a:nth-child(1)"
+						)) { // save it
+						var phone = document.querySelector(
+						"zi-text.data-column:nth-child(2) > div:nth-child(1) > a:nth-child(1)"
+						).href.slice(4);
+						// if phone number hasn't loaded in
+						if (phone === "Phone") {
+							var targetArea = document.querySelector(
+								"zi-text.data-column:nth-child(2) > div:nth-child(1) > a:nth-child(1)");
+							zoomWatcher(targetArea, true); // watch att change
+							// // just call self again, hope element has now loaded
+							// if (!overload) {
+							// 	fullAutoZoom();
+							// }
+						}
+					} // otherwise, save "not found"
+					else {
+						var phone = "not found";
+					}
+					// if email exists
+					if (document.querySelector(".email-link")) { // save it
+						var email = document.querySelector(".email-link").title;
+						// // if email hasn't loaded in
+						// if (email === "Email") {
+						// 	document.querySelector("a.xxsmall-12").click(); // click clear button
+						// 	alert("please consider switching to manual mode--your page isn't loading fast enough.");
+						// }
+						// if email hasn't loaded in
+						if (email === "Email") {
+							var targetArea = document.querySelector(".email-link");
+							zoomWatcher(targetArea, true); // watch att change
+						}
+					} // otherwise, save "not found"
+					else {
+						var email = "not found";
+					}
+					// add 'em to current info list
+					retrievedStorage[leadIndex].push(phone);
+					retrievedStorage[leadIndex].push(email);
+					// watch main content area for changes, move on
+					var targetArea = document.querySelector(".content-main-scrollable");
+					zoomWatcher(targetArea);
+					// reset in prep for next search
+					document.querySelector("a.xxsmall-12").click();
+					// save new data to local storage
+					leadsInfo = retrievedStorage;
+					browser.storage.local.set({"leadsInfo": leadsInfo});
+					// console.log(leadsInfo);
+				}
+				// technically, we can assume that if we've started a search,
+				// then we've entered a contact name, but let's be sure
+				else if (document.querySelector("[automationid='Contact Name']")) {
+					// check if we've also entered a company name
+					if (document.querySelector("[automationid='Company Name']")) {
+						// if no-one was found, save "not found" to contact, move on
+						if ((document.querySelector(".no-results")) ||
+							(document.querySelector(".brief-no-results"))) {
+							// add em to current info list
+							retrievedStorage[leadIndex].push("not found");
+							retrievedStorage[leadIndex].push("not found");
+							// watch main content area for changes, move on
+							var targetArea = document.querySelector(".content-main-scrollable");
+							zoomWatcher(targetArea);
+							// reset in prep for next search
+							document.querySelector("a.xxsmall-12").click();
+							// save new data to local storage
+							leadsInfo = retrievedStorage;
+							browser.storage.local.set({"leadsInfo": leadsInfo});
+						}
+						// watch table area for changes, move on
+						var targetArea = document.querySelector(
+							"tbody.p-datatable-tbody:nth-child(2)");
+						zoomWatcher(targetArea);
+						// if we have, select the first (hopefully only) contact
+						document.querySelector("[automation-id='visitorRow']").click();
+					}
+					else {
+						// watch filter area for changes, move on
+						var targetArea = document.querySelector(".chips-container");
+						zoomWatcher(targetArea);
+						// add current co name filter to search
+						enterLeadCompany(retrievedStorage[leadIndex][2]);
+					}
+				}
+				else {
+					// shouldn't get here--there should be no query without contact name
+					document.querySelector("a.xxsmall-12").click(); // click clear button
+					window.alert("something went wrong—please try again");
+					return;
+				}
+			}
+			else {
+				// watch main content area for changes, move on
+				var targetArea = document.querySelector(".content-main-scrollable");
+				zoomWatcher(targetArea);
+				// add current name filter to search
+				enterLeadName(retrievedStorage[leadIndex][0]);
+			}
+		});
+	}
+
+	/**
+	 * watch children of given target area, move to next step upon mutation
+	 */
+	function zoomWatcher(watchArea, att = false) {
+		// start observing content area
+		var targetArea = watchArea;
+		// allow code to be reused for watching contact info load
+		if (att === false) {
+			console.log("now watching the children");
+			var config = { childList: true };
+		}
+		else {
+			console.log("now watching the attributes");
+			var config = { attribute: true }
+		}
+		var observer = new MutationObserver(function() {
+			// log and return if so
+			console.log("they changed!");
+			// dunno if this is how js works
+			this.disconnect();
+			fullAutoZoom(); // call self again to move to next step
+		});
+		observer.observe(targetArea, config);
 	}
 
 	/**
