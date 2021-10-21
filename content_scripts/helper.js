@@ -178,8 +178,14 @@
 		let addedButton = document.getElementById("helper-menu");
 		addedButton.addEventListener('click', function() {
 			browser.storage.sync.get("settings", function(result) {
+				if (result.settings === undefined) {
+					var zoomManual = false;
+				}
+				else {
+					var zoomManual = result.settings.zoomManualSetting;
+				}
 				// call relevant search automation function
-				if (result.settings.zoomManualSetting) {
+				if (zoomManual) {
 					autoZoom();
 				}
 				else {

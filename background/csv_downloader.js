@@ -9,7 +9,13 @@ browser.runtime.onMessage.addListener(handleMessage);
 function handleMessage(request, sender, sendResponse) {
 	browser.storage.sync.get("settings", function(result) {
 		// console.log(`namesplit: ${result.settings.nameSplitSetting}`);
-		exportLeads(result.settings.nameSplitSetting);
+		if (result.settings === undefined) {
+			var nameSplit = false;
+		}
+		else {
+			var nameSplit = result.settings.nameSplitSetting;
+		}
+		exportLeads(nameSplit);
 	});
 }
 
