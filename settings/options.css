@@ -64,8 +64,10 @@ label.login {
 input.login {
 	display: table-cell;
 }
-
+input.toggle {
+	margin-bottom: 10px;
+}
 #submit {
 	font-size: 100%;
-	margin-top: 10px;
+	/*margin-top: 10px;*/
 }

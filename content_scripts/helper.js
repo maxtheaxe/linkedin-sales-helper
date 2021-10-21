@@ -177,9 +177,9 @@
 		// add event listener, so we know when new button is clicked
 		let addedButton = document.getElementById("helper-menu");
 		addedButton.addEventListener('click', function() {
-			browser.storage.sync.get("zoomManual", function(result) {
+			browser.storage.sync.get("settings", function(result) {
 				// call relevant search automation function
-				if (result.zoomManual) {
+				if (result.settings.zoomManualSetting) {
 					autoZoom();
 				}
 				else {

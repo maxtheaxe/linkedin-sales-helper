@@ -7,14 +7,17 @@ browser.runtime.onMessage.addListener(handleMessage);
  * handle messages "heard" by event listener
  */
 function handleMessage(request, sender, sendResponse) {
-	exportLeads();
+	browser.storage.sync.get("settings", function(result) {
+		// console.log(`namesplit: ${result.settings.nameSplitSetting}`);
+		exportLeads(result.settings.nameSplitSetting);
+	});
 }
 
 
 /**
  * export contact details collected for leads
  */
-function exportLeads(nameSplit = true) {
+function exportLeads(nameSplit) {
 	console.log("exporting!");
 	browser.storage.local.get("leadsInfo", function(result) {
 		let leadsInfo = result.leadsInfo;
