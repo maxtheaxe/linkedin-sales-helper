@@ -61,9 +61,9 @@
 			// extract name, remove whitespace/qualifications
 			let name = leadNames[i].textContent.trim().split(",")[0]
 			// extract title (with commas stripped for csv later)
-			let title = leadTitles[i].textContent.replaceAll(",", "");
+			let title = leadTitles[i].textContent.trim().replaceAll(",", "");
 			// extract company (with commas stripped for csv later)
-			let company = leadCompanies[i].textContent.replaceAll(",", "");
+			let company = leadCompanies[i].textContent.trim().replaceAll(",", "");
 			// append info per lead to main list
 			leadsInfo.push([name, title, company]);
 		}
