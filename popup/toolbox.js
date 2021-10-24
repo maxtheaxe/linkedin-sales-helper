@@ -63,22 +63,22 @@ function listenForClicks() {
 		 */
 		if (e.target.id === "collect") {
 			browser.tabs.query({active: true, currentWindow: true})
-				.then(collect);
+				.then(collect)
 				.catch(reportError);
 		}
 		else if (e.target.id === "search") {
 			browser.tabs.query({active: true, currentWindow: true})
-				.then(search);
+				.then(search)
 				.catch(reportError);
 		}
 		else if (e.target.id === "reset") {
 			browser.tabs.query({active: true, currentWindow: true})
-				.then(reset);
+				.then(reset)
 				.catch(reportError);
 		}
 		else if (e.target.id === "export") {
 			browser.tabs.query({active: true, currentWindow: true})
-				.then(exportInfo);
+				.then(exportInfo)
 				.catch(reportError);
 		}
 		else if (e.target.id === "settings") {
