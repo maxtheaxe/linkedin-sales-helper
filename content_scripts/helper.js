@@ -59,7 +59,9 @@
 		// extract, collect data about each lead (and clean up)
 		for (let i = 0; i < leadNames.length; i++) {
 			// extract name, remove whitespace/qualifications
-			let name = leadNames[i].textContent.trim().split(",")[0]
+			let name = leadNames[i].textContent.trim().split(",")[0];
+			// **should add general non alpha stripping later**
+			name = name.split("(")[0].trim(); // non alphanumeric chars don't work
 			// extract title (with commas stripped for csv later)
 			let title = leadTitles[i].textContent.trim().replaceAll(",", "");
 			// extract company (with commas stripped for csv later)
@@ -121,14 +123,6 @@
 	}
 
 	/**
-	 * calls zoom info api to retrieve contact info
-	 */
-	async function retrieveZoomInfo(firstName, lastName, title, company) {
-		zoomAPI = "" // zoom info api endpoint
-		// const response = await fetch()
-	}
-
-	/**
 	 * opens step menu on zoominfo page
 	 */
 	function addSearchMenu() {
@@ -137,11 +131,12 @@
 		if (document.querySelector("a.xxsmall-12")) {
 			document.querySelector("a.xxsmall-12").click(); // click if so
 		}
-		// check if button/porthole already exist
+		// check if buttons/porthole already exist
 		if (document.getElementsByClassName("linkedin-sales-helper").length !== 0) {
 			console.log("deleting old elements");
 			document.getElementById("helper-menu").remove();
 			document.getElementById("helper-porthole").remove();
+			document.getElementById("helper-skip").remove();
 		} // re(?) add it
 		// identify parent menu
 		let menu = document.querySelector('.content-title-row-right');
@@ -171,10 +166,22 @@
 			border: 2pt solid black;
 			color: white;
 		`;
+		// skip button
+		let skip = document.createElement("button");
+		skip.id = "helper-skip";
+		skip.classList = "linkedin-sales-helper";
+		skip.textContent = "Skip";
+		skip.style.cssText = `
+			background-color: orange;
+			padding: 5pt;
+			border-radius: 10pt;
+			color: white;
+		`;
 		// add new items to menu
+		menu.appendChild(skip);
 		menu.appendChild(advance);
 		menu.prepend(porthole);
-		// add event listener, so we know when new button is clicked
+		// add event listeners, so we know when new buttons are clicked
 		let addedButton = document.getElementById("helper-menu");
 		addedButton.addEventListener('click', function() {
 			browser.storage.sync.get("settings", function(result) {
@@ -192,6 +199,11 @@
 					fullAutoZoom();
 				}
 			});
+		});
+		let skipButton = document.getElementById("helper-skip");
+		skipButton.addEventListener('click', function() {
+			console.log("skipping this lead");
+			skipLead(); // used if stuck on a lead
 		});
 		console.log("menu added");
 	}
@@ -317,6 +329,8 @@
 	 */
 	function fullAutoZoom() {
 		console.log("full auto zooming!"); // remove
+		// **should move all storage operations to new function(s)**
+		// **needs general refactoring**
 		// retrieve previously collected data from local storage
 		browser.storage.local.get("leadsInfo", function(result) {
 			let retrievedStorage = result.leadsInfo;
@@ -526,6 +540,61 @@
 		// close company dropdown
 		document.querySelector(
 			"[automationid='Companies-icon-opened'").click();
+	}
+
+	/**
+	 * skips current lead if stuck
+	 */
+	function skipLead() {
+		// retrieve current lead
+		// retrieve previously collected data from local storage
+		browser.storage.local.get("leadsInfo", function(result) {
+			let retrievedStorage = result.leadsInfo;
+			// console.log(retrievedStorage); // see currently saved stuff
+			// let unparsedStorage = window.localStorage.getItem('collected_leads');
+			// if there was no previously collected data, notify user and exit
+			if (isEmpty(retrievedStorage)) {
+				window.alert("no collected leads found—please get them from linkedin first");
+				return;
+			}
+			// identify next contact
+			// loop until finding a lead with no contact info
+			var leadIndex = null; // in case none are found
+			for (let i = 0; i < retrievedStorage.length; i++) {
+				// if list length is less than 5, need contact info
+				if (retrievedStorage[i].length < 5) {
+					leadIndex = i; // identify current lead
+					break; // exit loop
+				}
+			}
+			// check if we've finished collecting contacts
+			if (leadIndex === null) {
+				window.alert("search complete");
+				return;
+			}
+			// store "not found" for info
+			retrievedStorage[leadIndex].push("skipped");
+			retrievedStorage[leadIndex].push("skipped");
+			// watch main content area for changes, move on (only fullauto)
+			browser.storage.sync.get("settings", function(result) {
+				if (result.settings === undefined) {
+					var zoomManual = false;
+				}
+				else {
+					var zoomManual = result.settings.zoomManualSetting;
+				}
+				// resume if in full auto mode
+				if (!zoomManual) {
+					var targetArea = document.querySelector(".content-main-scrollable");
+					zoomWatcher(targetArea);
+				}
+			});
+			// reset in prep for next search
+			document.querySelector("a.xxsmall-12").click();
+			// save new data to local storage
+			leadsInfo = retrievedStorage;
+			browser.storage.local.set({"leadsInfo": leadsInfo});
+		});
 	}
 
 	/**

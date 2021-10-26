@@ -11,14 +11,14 @@ body {
 	transform: translate(-50%, -50%);
 */}
 .title {
-	font-family: 'Lato', sans-serif;
+	/*font-family: 'Lato', sans-serif;*/
 	text-align: center;
 	vertical-align: middle;
 	margin: auto;
 }
 h1 {
 	color: black;
-	font-size: 350%;
+	font-size: 200%;
 	margin-top: 0px;
 	margin-bottom: 10px;
 }

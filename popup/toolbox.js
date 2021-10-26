@@ -81,9 +81,10 @@ function listenForClicks() {
 				.then(exportInfo)
 				.catch(reportError);
 		}
-		else if (e.target.id === "settings") {
-			var openingPage = browser.runtime.openOptionsPage();
-		}
+		// replaced with settings in popup
+		// else if (e.target.id === "settings") {
+		// 	var openingPage = browser.runtime.openOptionsPage();
+		// }
 	});
 }
 
