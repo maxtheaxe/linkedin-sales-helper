@@ -64,6 +64,7 @@
 			name = name.split("(")[0].trim(); // non alphanumeric chars don't work
 			// extract title (with commas stripped for csv later)
 			let title = leadTitles[i].textContent.trim().replaceAll(",", "");
+			title = title.replaceAll("–", "-"); // causes problems in excel
 			// extract company (with commas stripped for csv later)
 			let company = leadCompanies[i].textContent.trim().replaceAll(",", "");
 			// append info per lead to main list
@@ -81,21 +82,32 @@
 			document.getElementById("helper-counter").remove();
 		}
 		// create element, add to page
-		let leadCounter = document.createElement("p");
+		var leadCounter = document.createElement("div");
 		leadCounter.id = "helper-counter";
 		// borrow linkedin styling
 		leadCounter.classList = `
 			linkedin-sales-helper
 			artdeco-button
-			ml2 mr2 mt2
 			artdeco-button--2
 			artdeco-button--primary
 			ember-view
 			lists-nav-inline-action-buttons__share`;
 		leadCounter.textContent = `${numLeads} Collected`;
 		leadCounter.style.cssText = "background-color: red;";
-		// identify parent menu, append element
-		let targetMenu = document.querySelector(".mlA");
+		// identify appropriate parent menu (where the hell are enums in js)
+		// linkedin sales navigator lead list
+		if (window.location.href.includes('https://www.linkedin.com/sales/lists/people/')) {
+			var targetMenu = document.querySelector(".mlA");
+			leadCounter.classList.add("ml2", "mr2", "mt2"); // styling specific to page
+		}
+		// normal linkedin profile
+		else if (window.location.href.includes('https://www.linkedin.com/in/')) {
+			var targetMenu = document.querySelector(".pvs-profile-actions");
+		}
+		// normal linkedin search page
+		else if (window.location.href.includes('https://www.linkedin.com/search/results/people/')) {
+			var targetMenu = document.body; // obviously needs to be changed
+		}
 		targetMenu.appendChild(leadCounter);
 		// add event listener, so we can allow more collection via click
 		let addedButton = document.getElementById("helper-counter");
@@ -107,8 +119,40 @@
 	/**
 	 * collects information from a linkedin profile page
 	 */
-	function collectPerson() {
-		// here
+	function collectPerson(mostRecentJob = true) {
+		// ** stripping needs to be done in a cleaner way, all at once (code is duped)
+		// should probably move to csv exporter
+		// extract name, remove whitespace/qualifications
+		var name = document.querySelector(
+			'.text-heading-xlarge'
+			).innerText.trim().split(",")[0];
+		// **should add general non alpha stripping later**
+		name = name.split("(")[0].trim(); // non alphanumeric chars don't work
+		// get last job listed (either current or last one before unemployment)
+		var lastJob = document.querySelector(
+			'.pv-profile-section__section-info--has-more').children[0];
+		// extract title (with commas stripped for csv later)
+		var title = lastJob.getElementsByClassName(
+			't-16 t-black t-bold')[0].innerText.trim().replaceAll(",", "");
+		title = title.replaceAll("–", "-");
+		// check if currently employed or not (according to prof jobs)
+		var employed = lastJob.getElementsByClassName(
+			'pv-entity__date-range t-14 t-black--light t-normal'
+			)[0].children[1].innerText.includes("Present");
+		// extract company (with commas stripped for csv later)
+		var company = lastJob.getElementsByClassName(
+			'pv-entity__secondary-title t-14 t-black t-normal'
+			)[0].innerText.trim().replaceAll(",", "");
+		if ((!employed) && (!mostRecentJob)) {
+			// can either use title listed at top of profile or none at all
+			title = document.querySelector('div.text-body-medium').innerText;
+			// title = "not employed";
+			company = "not employed";
+		}
+		var leadsInfo = []; // formatted so storage func can use it
+		leadsInfo.push([name, title, company]);
+		// console.log(`collected person: ${leadsInfo}`)
+		setLeads(leadsInfo); // store newly collected person in browser
 	}
 
 	/**
