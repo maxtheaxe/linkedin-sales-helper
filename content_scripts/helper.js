@@ -106,7 +106,7 @@
 		}
 		// normal linkedin search page
 		else if (window.location.href.includes('https://www.linkedin.com/search/results/people/')) {
-			var targetMenu = document.body; // obviously needs to be changed
+			var targetMenu = document.getElementById('search-reusables__filters-bar');
 		}
 		targetMenu.appendChild(leadCounter);
 		// add event listener, so we can allow more collection via click
@@ -120,6 +120,7 @@
 	 * collects information from a linkedin profile page
 	 */
 	function collectPerson(mostRecentJob = true) {
+		// ** add setting for collecting most recent job if not employed
 		// ** stripping needs to be done in a cleaner way, all at once (code is duped)
 		// should probably move to csv exporter
 		// extract name, remove whitespace/qualifications
@@ -129,8 +130,15 @@
 		// **should add general non alpha stripping later**
 		name = name.split("(")[0].trim(); // non alphanumeric chars don't work
 		// get last job listed (either current or last one before unemployment)
-		var lastJob = document.querySelector(
-			'.pv-profile-section__section-info--has-more').children[0];
+		if (document.querySelector('.pv-profile-section__section-info--has-more')) {
+			// here
+			var lastJob = document.querySelector(
+				'.pv-profile-section__section-info--has-more').children[0];
+		}
+		else {
+			alert("something went wrong - please verify that this person has work experience and that the lower section of the page is loaded");
+			return; // alert is self explanatory
+		}
 		// extract title (with commas stripped for csv later)
 		var title = lastJob.getElementsByClassName(
 			't-16 t-black t-bold')[0].innerText.trim().replaceAll(",", "");
@@ -158,8 +166,50 @@
 	/**
 	 * collects information of people/results in linkedin search
 	 */
-	function collectSearch() {
-		// here
+	function collectSearch(guessCompany = true) {
+		// ** add setting for allowing "guessing" company
+		// identify all people results
+		var results = document.getElementsByClassName('reusable-search__result-container');
+		// loop over all results
+		var leadsInfo = []; // extracted info about each lead
+		// extract, collect data about each lead (and clean up)
+		for (let i = 0; i < results.length; i++) {
+			// extract name, remove whitespace/qualifications
+			// ** possibly add setting to include hidden members to results
+			if (results[i].innerText.includes("LinkedIn Member")) {
+				console.log("skipping hidden profile");
+				continue;
+			}
+			else {
+				var name = results[i].querySelector(
+				'[dir="ltr"]'
+				).children[0].innerText.trim().split(",")[0];
+				// **should add general non alpha stripping later**
+				name = name.split("(")[0].trim(); // non alphanumeric chars don't work
+			}
+			// extract title (with commas stripped for csv later)
+			var title = results[i].getElementsByClassName(
+				'entity-result__primary-subtitle t-14 t-black t-normal'
+				)[0].innerText.trim().replaceAll(",", "");
+			title = title.replaceAll("–", "-"); // causes problems in excel
+			if (guessCompany) {
+				// check if using linkedin title convention
+				if (title.includes(" at ")) {
+					var separatedInfo = title.split(" at ");
+					title = separatedInfo[0]; // new title (title before "at")
+					var company = separatedInfo[1]; // guessed company (title after "at")
+				}
+				else {
+					var company = "not extractable";
+				}
+			}
+			else {
+				var company = "";
+			}
+			// append info per lead to main list
+			leadsInfo.push([name, title, company]);
+		}
+		setLeads(leadsInfo); // save any new leads to storage
 	}
 
 	/**
