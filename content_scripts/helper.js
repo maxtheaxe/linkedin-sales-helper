@@ -26,7 +26,7 @@
 	/**
 	 * collect all leads from lead list page, extends given existing stored leads
 	 */
-	function collectLeads() {
+	function collectLeadsList() {
 		// verify that all leads have complete accounts, profile info
 		let missingAccounts = document.querySelectorAll(
 			"span.list-detail-account-matching__text");
@@ -69,30 +69,7 @@
 			// append info per lead to main list
 			leadsInfo.push([name, title, company]);
 		}
-		// retrieve previously collected data from local storage
-		browser.storage.local.get("leadsInfo", function(result) {
-			let retrievedStorage = result.leadsInfo;
-			// stringify for lazy dupe searching
-			let unparsedStorage = JSON.stringify(retrievedStorage);
-			// if there was previously collected data, extend it w/o dupes
-			// verify these boolean statements, they seem sketchy
-			if (!isEmpty(retrievedStorage)) {
-				for (let i = 0; i < leadsInfo.length; i++) {
-					// if not dupe, extend old list
-					// (checks if name is substring of unparsed JSON)
-					if (!unparsedStorage.includes(leadsInfo[i][0])) {
-						// console.log(`here: ${typeof(retrievedStorage)}`);
-						// console.log(`here: ${(retrievedStorage)}`)
-						retrievedStorage.push(leadsInfo[i]);
-					}
-				}
-				leadsInfo = retrievedStorage; // save extended list to leadsInfo
-			}
-			addLeadCounter(leadsInfo.length);
-			// save collected data to local storage
-			browser.storage.local.set({"leadsInfo": leadsInfo});
-			console.log(leadsInfo);
-		});
+		setLeads(leadsInfo); // save any new leads to storage
 	}
 
 	/**
@@ -120,6 +97,25 @@
 		// identify parent menu, append element
 		let targetMenu = document.querySelector(".mlA");
 		targetMenu.appendChild(leadCounter);
+		// add event listener, so we can allow more collection via click
+		let addedButton = document.getElementById("helper-counter");
+		addedButton.addEventListener('click', function() {
+			collectSwitcher(); // call appropriate collect method
+		});
+	}
+
+	/**
+	 * collects information from a linkedin profile page
+	 */
+	function collectPerson() {
+		// here
+	}
+
+	/**
+	 * collects information of people/results in linkedin search
+	 */
+	function collectSearch() {
+		// here
 	}
 
 	/**
@@ -612,9 +608,33 @@
 	}
 
 	/**
-	 * on successful storage of lead info
+	 * stores new lead info
 	 */
-	function setLeads() {
+	function setLeads(leadsInfo) {
+		// retrieve previously collected data from local storage
+		browser.storage.local.get("leadsInfo", function(result) {
+			let retrievedStorage = result.leadsInfo;
+			// stringify for lazy dupe searching
+			let unparsedStorage = JSON.stringify(retrievedStorage);
+			// if there was previously collected data, extend it w/o dupes
+			// verify these boolean statements, they seem sketchy
+			if (!isEmpty(retrievedStorage)) {
+				for (let i = 0; i < leadsInfo.length; i++) {
+					// if not dupe, extend old list
+					// (checks if name is substring of unparsed JSON)
+					if (!unparsedStorage.includes(leadsInfo[i][0])) {
+						// console.log(`here: ${typeof(retrievedStorage)}`);
+						// console.log(`here: ${(retrievedStorage)}`)
+						retrievedStorage.push(leadsInfo[i]);
+					}
+				}
+				leadsInfo = retrievedStorage; // save extended list to leadsInfo
+			}
+			addLeadCounter(leadsInfo.length); // only for lead list page as of now
+			// save collected data to local storage
+			browser.storage.local.set({"leadsInfo": leadsInfo});
+			console.log(leadsInfo);
+		});
 		console.log("leads successfully stored");
 	}
 
@@ -626,13 +646,41 @@
 	}
 
 	/**
+	 * call correct collect method based on current page
+	 */
+	function collectSwitcher() {
+		// check if we're on a lead list from sales navigator
+		if (window.location.href.includes('https://www.linkedin.com/sales/lists/people/')) {
+			console.log('collecting a lead list');
+			// after a lot of storage f-ery, i think this handles it
+			collectLeadsList();
+		}
+		// if on a linkedin profile
+		else if (window.location.href.includes('https://www.linkedin.com/in/')) {
+			console.log("collecting a single person's info");
+			// collect the person's info
+			collectPerson();
+		}
+		// if linkedin search results are visible
+		else if (window.location.href.includes('https://www.linkedin.com/search/results/people/')) {
+			console.log("collecting results of a search");
+			// collect the visible info
+			collectSearch();
+		}
+		else {
+			// otherwise, don't collect anything
+			alert('not on a page we can collect from');
+		}
+	}
+
+	/**
 	 * Listen for messages from the background script.
 	 * Call appropriate method.
 	*/
 	browser.runtime.onMessage.addListener((message) => {
 		if (message.command === "collect") {
-			// after a lot of storage f-ery, i think this handles it
-			collectLeads();
+			// choose appropriate collect method
+			collectSwitcher();
 		}
 		else if (message.command === "search") {
 			console.log("navigating to search page...");
