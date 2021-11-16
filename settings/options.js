@@ -15,9 +15,16 @@ function saveOptions(e) {
 function restoreOptions() {
 
 	function setCurrentChoice(result) {
-		console.log(result.settings.zoomManualSetting, result.settings.nameSplitSetting);
-		zoomManual.checked = result.settings.zoomManualSetting;
-		nameSplit.checked = result.settings.nameSplitSetting;
+		if (result.settings === undefined) {
+			console.log("undefined", "undefined");
+			zoomManual.checked = false;
+			nameSplit.checked = false;
+		}
+		else {
+			console.log(result.settings.zoomManualSetting, result.settings.nameSplitSetting);
+			zoomManual.checked = result.settings.zoomManualSetting;
+			nameSplit.checked = result.settings.nameSplitSetting;
+		}
 	}
 
 	function onError(error) {
