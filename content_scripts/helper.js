@@ -130,13 +130,25 @@
 		// **should add general non alpha stripping later**
 		name = name.split("(")[0].trim(); // non alphanumeric chars don't work
 		// get last job listed (either current or last one before unemployment)
+		// apparently linkedin profiles are displayed differently depending on user
+		// could be based on account age or number of connections--it's unclear
+		// the new account definitely has a more obscured source
+		window.scroll(0,1000); // scroll down to make sure experience section loads
 		if (document.querySelector('.pv-profile-section__section-info--has-more')) {
-			// here
 			var lastJob = document.querySelector(
 				'.pv-profile-section__section-info--has-more').children[0];
 		}
 		else {
-			alert("something went wrong - please verify that this person has work experience and that the lower section of the page is loaded");
+			// see if it's an alternately-styled profile (as mentioned above)
+			var sectionList = document.getElementsByClassName('artdeco-card ember-view break-words');
+			for (let i = 0; i < sectionList.length; i++) {
+				if (sectionList[i].id.includes("EXPERIENCE")) { // random jumbo class w xp
+					var xpSection = sectionList[i]; // more focused target section
+					// call function for handling new styling
+					return collectNewPerson(name, xpSection);
+				}
+			}
+			alert("something went wrong - please verify that this person has work experience");
 			return; // alert is self explanatory
 		}
 		// extract title (with commas stripped for csv later)
@@ -152,23 +164,62 @@
 			'pv-entity__secondary-title t-14 t-black t-normal'
 			)[0].innerText.trim().replaceAll(",", "");
 		browser.storage.sync.get("settings", function(result) {
-				if (result.settings === undefined) {
-					var mostRecentJob = false;
-				}
-				else {
-					var mostRecentJob = result.settings.mostRecentJobSetting;
-				}
-				if ((!employed) && (!mostRecentJob)) {
-					// can either use title listed at top of profile or none at all
-					title = document.querySelector('div.text-body-medium').innerText;
-					// title = "not employed";
-					company = "not employed";
-				}
-				var leadsInfo = []; // formatted so storage func can use it
-				leadsInfo.push([name, title, company]);
-				// console.log(`collected person: ${leadsInfo}`)
-				setLeads(leadsInfo); // store newly collected person in browser
-			});
+			if (result.settings === undefined) {
+				var mostRecentJob = false;
+			}
+			else {
+				var mostRecentJob = result.settings.mostRecentJobSetting;
+			}
+			if ((!employed) && (!mostRecentJob)) {
+				// can either use title listed at top of profile or none at all
+				title = document.querySelector('div.text-body-medium').innerText;
+				// title = "not employed";
+				company = "not employed";
+			}
+			var leadsInfo = []; // formatted so storage func can use it
+			leadsInfo.push([name, title, company]);
+			// console.log(`collected person: ${leadsInfo}`)
+			setLeads(leadsInfo); // store newly collected person in browser
+		});
+	}
+
+	/**
+	 * collects information from a linkedin profile page viewed with a new account
+	 */
+	function collectNewPerson(name, xpSection) {
+		// collect last job
+		var lastJob = xpSection.querySelector('div:nth-child(2) > ul:nth-child(1)').children[0];
+		// extract title (with commas stripped for csv later)
+		var title = lastJob.getElementsByClassName(
+			't-bold mr1 hoverable-link-text'
+			)[0].children[0].innerText.trim().replaceAll(",", "");
+		title = title.replaceAll("–", "-");
+		// check if currently employed or not (according to prof jobs)
+		var employed = lastJob.getElementsByClassName(
+			't-14 t-normal t-black--light'
+			)[0].children[0].innerText.includes("Present");
+		// extract company (with commas stripped for csv later)
+		var company = lastJob.getElementsByClassName(
+			't-14 t-normal'
+			)[0].children[0].innerText.trim().replaceAll(",", "");
+		browser.storage.sync.get("settings", function(result) {
+			if (result.settings === undefined) {
+				var mostRecentJob = false;
+			}
+			else {
+				var mostRecentJob = result.settings.mostRecentJobSetting;
+			}
+			if ((!employed) && (!mostRecentJob)) {
+				// can either use title listed at top of profile or none at all
+				title = document.querySelector('div.text-body-medium').innerText;
+				// title = "not employed";
+				company = "not employed";
+			}
+			var leadsInfo = []; // formatted so storage func can use it
+			leadsInfo.push([name, title, company]);
+			// console.log(`collected person: ${leadsInfo}`)
+			setLeads(leadsInfo); // store newly collected person in browser
+		});
 	}
 
 	/**
