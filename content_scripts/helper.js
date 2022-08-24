@@ -254,10 +254,17 @@
 					name = name.split("(")[0].trim(); // non alphanumeric chars don't work
 				}
 				// extract title (with commas stripped for csv later)
-				var title = results[i].getElementsByClassName(
+				if (results[i].getElementsByClassName(
 					'entity-result__primary-subtitle t-14 t-black t-normal'
-					)[0].innerText.trim().replaceAll(",", "");
-				title = title.replaceAll("–", "-"); // causes problems in excel
+					).length !== 0) { // handle no title given
+					var title = results[i].getElementsByClassName(
+						'entity-result__primary-subtitle t-14 t-black t-normal'
+						)[0].innerText.trim().replaceAll(",", "");
+					title = title.replaceAll("–", "-"); // causes problems in excel
+				}
+				else {
+					var title = ""; // no title given (future: maybe grab current job title?)
+				}
 				if (guessCompany) {
 					// check if using linkedin title convention
 					if (title.includes(" at ")) {
@@ -827,6 +834,13 @@
 			console.log("collecting results of a search");
 			// collect the visible info
 			collectSearch();
+		}
+		// if on initial search result page
+		else if (window.location.href.includes('https://www.linkedin.com/search/results/all/')) {
+			document.querySelector(
+				'div.ph0:nth-child(1) > div:nth-child(3) > a:nth-child(1)'
+				).click(); // click "see all people results" button
+			alert('redirecting to full search results (try again)');
 		}
 		else {
 			// otherwise, don't collect anything
