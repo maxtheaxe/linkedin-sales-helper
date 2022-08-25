@@ -139,10 +139,12 @@
 				'.pv-profile-section__section-info--has-more').children[0];
 		}
 		else {
+			console.log("detected an alternately-styled profile");
 			// see if it's an alternately-styled profile (as mentioned above)
 			var sectionList = document.getElementsByClassName('artdeco-card ember-view break-words');
 			for (let i = 0; i < sectionList.length; i++) {
-				if (sectionList[i].id.includes("EXPERIENCE")) { // random jumbo class w xp
+				// random sub-div (containing nothing) identifying xp section
+				if (sectionList[i].querySelector('div[id="experience"]')) {
 					var xpSection = sectionList[i]; // more focused target section
 					// call function for handling new styling
 					return collectNewPerson(name, xpSection);
@@ -188,20 +190,33 @@
 	 */
 	function collectNewPerson(name, xpSection) {
 		// collect last job
-		var lastJob = xpSection.querySelector('div:nth-child(2) > ul:nth-child(1)').children[0];
+		var lastJob = xpSection.querySelector('ul:nth-child(1) > li:nth-child(1)');
 		// extract title (with commas stripped for csv later)
-		var title = lastJob.getElementsByClassName(
-			't-bold mr1 hoverable-link-text'
-			)[0].children[0].innerText.trim().replaceAll(",", "");
-		title = title.replaceAll("–", "-");
+		// first, check for multiple positions/titles at most recent company
+		var lastJobTitles = lastJob.getElementsByClassName('t-bold mr1');
+		if (lastJobTitles.length > 1) { // true: multiple positions at this co
+			// if multiple, first is co name, second is most recent position
+			var title = lastJobTitles[1].children[0];
+			// update with more specific last job location (really last position)
+			// grab employment status at given company
+			// work backwards from title, given multiplse positions
+			var employment = title.parentNode.parentNode.children[0].children[0];
+			// grab current company info (using first title we found before)
+			var company = lastJobTitles[0].children[0];
+		} else { // false: just one position listed at most recent company
+			var title = lastJobTitles[0].children[0];
+			// work backwards from title for subsequent pieces of info
+			// grab employment status at given company
+			var employment = 
+				title.parentNode.parentNode.parentNode.children[2].children[0];
+			// grab current company info
+			var company = title.parentNode.parentNode.parentNode.children[1].children[0];
+		}
+		// extract text from elements and clean up
+		var titleText = title.innerText;
+		var companyText = company.innerText.split("·")[0]; // strip type indicator
 		// check if currently employed or not (according to prof jobs)
-		var employed = lastJob.getElementsByClassName(
-			't-14 t-normal t-black--light'
-			)[0].children[0].innerText.includes("Present");
-		// extract company (with commas stripped for csv later)
-		var company = lastJob.getElementsByClassName(
-			't-14 t-normal'
-			)[0].children[0].innerText.trim().replaceAll(",", "");
+		var employed = employment.innerText.includes("Present");
 		browser.storage.sync.get("settings", function(result) {
 			if (result.settings === undefined) {
 				var mostRecentJob = false;
@@ -211,12 +226,19 @@
 			}
 			if ((!employed) && (!mostRecentJob)) {
 				// can either use title listed at top of profile or none at all
-				title = document.querySelector('div.text-body-medium').innerText;
+				titleText = document.querySelector('div.text-body-medium').innerText;
 				// title = "not employed";
-				company = "not employed";
+				companyText = "not employed";
+			}
+			var collectedInfo = [name, titleText, companyText]
+			// clean up extracted text all at once
+			for (let i = 0; i < collectedInfo.length; i++) {
+				collectedInfo[i] = collectedInfo[i].trim(
+					).replaceAll(",", "");
+				collectedInfo[i] = collectedInfo[i].replaceAll("–", "-");
 			}
 			var leadsInfo = []; // formatted so storage func can use it
-			leadsInfo.push([name, title, company]);
+			leadsInfo.push(collectedInfo);
 			// console.log(`collected person: ${leadsInfo}`)
 			setLeads(leadsInfo); // store newly collected person in browser
 		});
