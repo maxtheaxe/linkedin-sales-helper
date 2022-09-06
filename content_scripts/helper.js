@@ -474,9 +474,10 @@
 				}
 				// technically, we can assume that if we've started a search,
 				// then we've entered a contact name, but let's be sure
-				else if (document.querySelector("[automationid='Contact Name']")) {
-					// check if we've also entered a company name
-					if (document.querySelector("[automationid='Company Name']")) {
+				// here we check to see if the filter for contact name appears at the top
+				else if (document.querySelector("[automationid*='Contact Name']")) {
+					// check if we've also entered a company name (does filter exist?)
+					if (document.querySelector("[automationid*='Company Name']")) {
 						// if no-one was found, save "not found" to contact, move on
 						if ((document.querySelector(".no-results")) ||
 							(document.querySelector(".brief-no-results"))) {
@@ -490,11 +491,19 @@
 							browser.storage.local.set({"leadsInfo": leadsInfo});
 						}
 						// if we have, select the first (hopefully only) contact
-						document.querySelector("[automation-id='visitorRow']").click();
+						document.querySelector("zi-row-contact-logo").click();
 					}
 					else {
 						// add current co name filter to search
-						enterLeadCompany(retrievedStorage[leadIndex][2]);
+						var companySuccess = enterLeadCompany(
+							retrievedStorage[leadIndex][2]);
+						if (!companySuccess) {
+							window.alert(
+								'no company collected for the given contact: ' +
+								'select contact manually or skip to the next one\n\n' +
+								'next time, try "guess company from' +
+								' title" setting before collection');
+						}
 					}
 				}
 				else {
@@ -513,7 +522,7 @@
 	/**
 	 * fully automates zoominfo search process
 	 */
-	function fullAutoZoom() {
+	function fullAutoZoom() { // get rid of code duplication here
 		console.log("full auto zooming!"); // remove
 		// **should move all storage operations to new function(s)**
 		// **needs general refactoring**
@@ -605,9 +614,10 @@
 				}
 				// technically, we can assume that if we've started a search,
 				// then we've entered a contact name, but let's be sure
-				else if (document.querySelector("[automationid='Contact Name']")) {
-					// check if we've also entered a company name
-					if (document.querySelector("[automationid='Company Name']")) {
+				// here we check to see if the filter for contact name appears at the top
+				else if (document.querySelector("[automationid*='Contact Name']")) {
+					// check if we've also entered a company name (does filter exist?)
+					if (document.querySelector("[automationid*='Company Name']")) {
 						// if no-one was found, save "not found" to contact, move on
 						if ((document.querySelector(".no-results")) ||
 							(document.querySelector(".brief-no-results"))) {
@@ -628,14 +638,22 @@
 							"tbody.p-datatable-tbody:nth-child(2)");
 						zoomWatcher(targetArea);
 						// if we have, select the first (hopefully only) contact
-						document.querySelector("[automation-id='visitorRow']").click();
+						document.querySelector("zi-row-contact-logo").click();
 					}
 					else {
 						// watch filter area for changes, move on
 						var targetArea = document.querySelector(".chips-container");
 						zoomWatcher(targetArea);
 						// add current co name filter to search
-						enterLeadCompany(retrievedStorage[leadIndex][2]);
+						var companySuccess = enterLeadCompany(
+							retrievedStorage[leadIndex][2]);
+						if (!companySuccess) {
+							window.alert(
+								'no company collected for the given contact: ' +
+								'select contact manually or skip to the next one\n\n' +
+								'next time, try "guess company from' +
+								' title" setting before collection');
+						}
 					}
 				}
 				else {
@@ -708,6 +726,10 @@
 	 * enter next lead's company name
 	 */
 	function enterLeadCompany(leadCompany) {
+		// double check that there is a company actually provided
+		if (leadCompany === "" || leadCompany === "not extractable") {
+			return false; // no search possible without company given
+		}
 		// open company drop down
 		document.querySelector(
 			"[automationid='Companies-icon-closed'").click();
@@ -726,6 +748,7 @@
 		// close company dropdown
 		document.querySelector(
 			"[automationid='Companies-icon-opened'").click();
+		return true; // we think a company was successfully entered/searched
 	}
 
 	/**
@@ -761,6 +784,7 @@
 			// store "not found" for info
 			retrievedStorage[leadIndex].push("skipped");
 			retrievedStorage[leadIndex].push("skipped");
+			console.log("pushed stuff"); // debugging
 			// watch main content area for changes, move on (only fullauto)
 			browser.storage.sync.get("settings", function(result) {
 				if (result.settings === undefined) {
@@ -775,8 +799,11 @@
 					zoomWatcher(targetArea);
 				}
 			});
-			// reset in prep for next search
-			document.querySelector("a.xxsmall-12").click();
+			// check if a search was already started
+			if (document.querySelector("a.xxsmall-12")) {
+				// reset it in prep for next search
+				document.querySelector("a.xxsmall-12").click();
+			}
 			// save new data to local storage
 			leadsInfo = retrievedStorage;
 			browser.storage.local.set({"leadsInfo": leadsInfo});
