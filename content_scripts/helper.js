@@ -434,18 +434,37 @@
 				// if contact details are visible, save 'em
 				if (document.querySelector(
 					".contact-details-grid-col-left > div:nth-child(1)")) {
-					// if phone exists
-					if (document.querySelector(
-						"zi-text.data-column:nth-child(2) > div:nth-child(1) > a:nth-child(1)"
-						)) { // save it
-						var phone = document.querySelector(
-						"zi-text.data-column:nth-child(2) > div:nth-child(1) > a:nth-child(1)"
-						).href.slice(4);
+					// if phone exists (there exists at least one num in phone section)
+					var phoneNumbers = document.querySelectorAll(
+						".phone-section zi-text.data-column [class*='phone']"
+						);
+					if (phoneNumbers.length > 0) {
+						var hqNumber = null; // in case it's only option
+						var phone = null;
+						for (let i = 0; i < phoneNumbers.length; i++) {
+							if (phoneNumbers[i].innerText.includes("HQ")) {
+								// we'd rather have a direct number,
+								// but just in case it's not available
+								hqNumber = phoneNumbers[i].children[0].href.slice(4);
+							}
+							else {
+								phone = phoneNumbers[i].children[0].href.slice(4);
+								break;
+							}
+						}
+						if ((phone === null) && (hqNumber !== null)) {
+							phone = hqNumber; // grab hq number, it's better than nothing
+						}
+						else if ((phone === null) && (hqNumber === null)) {
+							// shouldn't get here, but likely means no number exists
+							phone = "not found";
+						}
 						// alert user to slow down if clicking too fast to load
 						if (phone === "Phone") {
 							document.querySelector("a.xxsmall-12").click(); // click clear button
 							alert("slow down!");
 						}
+						// console.log(`Phone: ${phone}`); // debugging
 					} // otherwise, save "not found"
 					else {
 						var phone = "not found";
@@ -561,13 +580,31 @@
 				// if contact details are visible, save 'em
 				if (document.querySelector(
 					".contact-details-grid-col-left > div:nth-child(1)")) {
-					// if phone exists
-					if (document.querySelector(
-						"zi-text.data-column:nth-child(2) > div:nth-child(1) > a:nth-child(1)"
-						)) { // save it
-						var phone = document.querySelector(
-						"zi-text.data-column:nth-child(2) > div:nth-child(1) > a:nth-child(1)"
-						).href.slice(4);
+					// if phone exists (there exists at least one num in phone section)
+					var phoneNumbers = document.querySelectorAll(
+						".phone-section zi-text.data-column [class*='phone']"
+						);
+					if (phoneNumbers.length > 0) {
+						var hqNumber = null; // in case it's only option
+						var phone = null;
+						for (let i = 0; i < phoneNumbers.length; i++) {
+							if (phoneNumbers[i].innerText.includes("HQ")) {
+								// we'd rather have a direct number,
+								// but just in case it's not available
+								hqNumber = phoneNumbers[i].children[0].href.slice(4);
+							}
+							else {
+								phone = phoneNumbers[i].children[0].href.slice(4);
+								break;
+							}
+						}
+						if ((phone === null) && (hqNumber !== null)) {
+							phone = hqNumber; // grab hq number, it's better than nothing
+						}
+						else if ((phone === null) && (hqNumber === null)) {
+							// shouldn't get here, but likely means no number exists
+							phone = "not found";
+						}
 						// if phone number hasn't loaded in
 						if (phone === "Phone") {
 							var targetArea = document.querySelector(
