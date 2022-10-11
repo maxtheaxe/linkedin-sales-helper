@@ -1,6 +1,6 @@
 {
 
-	"description": "simplifies the process of collecting results of linkedin sales navigator",
+	"description": "easily collect, export, and enrich leads from linkedin",
 	"manifest_version": 2,
 	"name": "linkedin sales helper",
 	"version": "1.31",
@@ -13,7 +13,7 @@
 		// "activeTab",
 		"downloads",
 		"storage",
-		"*://*.linkedin.com/sales/*",
+		"*://*.linkedin.com/*",
 		"*://*.zoominfo.com/*"
 	],
 
