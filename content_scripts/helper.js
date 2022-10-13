@@ -27,48 +27,44 @@
 	 * collect all leads from lead list page, extends given existing stored leads
 	 */
 	function collectLeadsList() {
-		// verify that all leads have complete accounts, profile info
-		let missingAccounts = document.querySelectorAll(
-			"span.list-detail-account-matching__text");
-		if (missingAccounts.length > 0) {
-			// there's obv a better way to do multiline
-			window.alert(
-				"Some leads were missing info, so they were hidden and " +
-				"excluded from the collection."
-				);
-			// return "error: incomplete info";
-			// remove leads with missing info
-			for (let i = 0; i < missingAccounts.length; i++) {
-				// delete problematic lead (doesn't actually remove from linkedin)
-				missingAccounts[i].parentNode.parentNode.parentNode.parentNode.remove();
-			}
-		}
-		// identify names of all leads listed on page
-		let leadNames = document.querySelectorAll(
-			"[data-anonymize='person-name']");
-		// identify titles of all leads listed on page
-		let leadTitles = document.querySelectorAll(
-			"[data-anonymize='job-title']");
-		// identify companies of all leads listed on page
-		// number of co names is dynamically sliced to number
-		// of ppl names (since it's double)
-		// if errors are caused, might need to delete extras assoc w missing accs
-		let leadCompanies = Array.from(document.querySelectorAll(
-			"[data-anonymize='company-name'")).slice(0, leadNames.length);
+		console.log("using rebuilt lead list collector");
+		// identify all people in lead list (each has own row)
+		let leadRows = document.querySelectorAll('tr[data-x--people-list--row]');
+		let missingData = false; // if this is changed later, we know to notify user
 		let leadsInfo = []; // extracted info about each lead
-		// extract, collect data about each lead (and clean up)
-		for (let i = 0; i < leadNames.length; i++) {
+		// extract, clean, collect data about each lead
+		for (let i = 0; i < leadRows.length; i++) {
+			// identify all elements containing relevant data
+			// identify names of all leads listed on page
+			let leadName = leadRows[i].querySelector(
+				"[data-anonymize='person-name']");
+			// identify titles of all leads listed on page
+			let leadTitle = leadRows[i].querySelector(
+				"[data-anonymize='job-title']");
+			// identify company of given lead
+			let leadCompany = leadRows[i].querySelector(
+				"[data-anonymize='company-name']");
+			if ([leadName, leadTitle, leadCompany].includes(null)) {
+				missingData = true; // we found a contact with missing data
+				continue; // don't add contact info to list
+			}
 			// extract name, remove whitespace/qualifications
-			let name = leadNames[i].textContent.trim().split(",")[0];
+			let name = leadName.textContent.trim().split(",")[0];
 			// **should add general non alpha stripping later**
 			name = name.split("(")[0].trim(); // non alphanumeric chars don't work
 			// extract title (with commas stripped for csv later)
-			let title = leadTitles[i].textContent.trim().replaceAll(",", "");
+			let title = leadTitle.textContent.trim().replaceAll(",", "");
 			title = title.replaceAll("–", "-"); // causes problems in excel
 			// extract company (with commas stripped for csv later)
-			let company = leadCompanies[i].textContent.trim().replaceAll(",", "");
+			let company = leadCompany.textContent.trim().replaceAll(",", "");
 			// append info per lead to main list
 			leadsInfo.push([name, title, company]);
+		}
+		if (missingData) {
+			window.alert( // there's obv a better way to do multiline
+				"Some leads were missing info, so they were hidden and " +
+				"excluded from the collection."
+				);
 		}
 		setLeads(leadsInfo); // save any new leads to storage
 	}

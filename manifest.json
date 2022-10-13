@@ -3,7 +3,7 @@
 	"description": "easily collect, export, and enrich leads from linkedin",
 	"manifest_version": 2,
 	"name": "linkedin sales helper",
-	"version": "1.31",
+	"version": "1.32",
 	"homepage_url": "http://linkedinsaleshelper.com/",
 	"icons": {
 		"48": "icons/lsh-48.png"
