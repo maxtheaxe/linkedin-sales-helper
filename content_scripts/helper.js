@@ -928,6 +928,12 @@
 				).click(); // click "see all people results" button
 			alert('redirecting to full search results (try again)');
 		}
+		// if on local html file version of a leads list
+		else if (window.location.href.includes('file://')) {
+			console.log('collecting a lead list for debugging purposes');
+			// after a lot of storage f-ery, i think this handles it
+			collectLeadsList();
+		}
 		else {
 			// otherwise, don't collect anything
 			alert('not on a page we can collect from');

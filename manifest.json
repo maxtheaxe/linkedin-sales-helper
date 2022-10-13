@@ -14,7 +14,8 @@
 		"downloads",
 		"storage",
 		"*://*.linkedin.com/*",
-		"*://*.zoominfo.com/*"
+		"*://*.zoominfo.com/*",
+		"file:///home/max/Downloads/Lists%20Sales%20Navigator.html"
 	],
 
 	// "content_scripts": [ // ref: https://stackoverflow.com/a/7655808/4513452
