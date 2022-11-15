@@ -62,7 +62,7 @@
 		}
 		if (missingData) {
 			window.alert( // there's obv a better way to do multiline
-				"Some leads were missing info, so they were hidden and " +
+				"Some leads were missing info, so they were " +
 				"excluded from the collection."
 				);
 		}
